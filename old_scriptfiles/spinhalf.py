@@ -31,7 +31,7 @@ def qubit_time_evolution_matplot(alpha, beta):
     ax = plt.figure().add_subplot(projection='3d')
     t = np.linspace(0, 100, 100)
     alpha_r = alpha * (np.cos(omega*t/constants.hbar) - 1j * np.sin(omega*t/constants.hbar))
-    beta_r = beta * (np.cos(omega*t/constants.hbar) + 1j * np.sin(omega*t/constants.hbar))
+    beta_r = beta * (np.cos(omega*t/constants.hbar) + 1j * np.sin(omega*t/constants.hbar)) 
     
     z = alpha**2 - beta**2
     y = 2 * np.imag(np.conjugate(alpha_r) * beta_r)

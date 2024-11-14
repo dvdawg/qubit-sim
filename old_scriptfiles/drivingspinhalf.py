@@ -5,12 +5,12 @@ from qutip import *
 import qutip as qt
 
 # params
-omega_q = 1.0 
+omega_q = 3.0 
 A = 1
 omega_d = omega_q
-phi = 0.4 # phase
-alpha = 1 / np.sqrt(2)
-beta = 1 / np.sqrt(2)
+phi = 0.7 # phase
+alpha = 1/2
+beta =  np.sqrt(3) / 2
 t_list = np.linspace(0, 100, 100)
 
 def driving_field(t, args):
