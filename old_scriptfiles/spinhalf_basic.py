@@ -5,7 +5,7 @@ from qutip import *
 import qutip as qt
 
 # params
-omega = 1.0 # H = omega * sigma_z
+omega = 3.0 # H = omega * sigma_z
 alpha = 1 / 2
 beta = np.sqrt(3) / 2 # psi = alpha |0> + beta |1>
 t_list = np.linspace(0, 100, 100)  # time points
@@ -37,10 +37,28 @@ def qubit_time_evolution_matplot(alpha, beta):
     y = 2 * np.imag(np.conjugate(alpha_r) * beta_r)
     x = 2 * np.real(np.conjugate(alpha_r) * beta_r)
 
-    ax.plot(x, y, z, label='parametric curve')
+    ax.plot(x, y, z, label='qubit')
     ax.legend()
 
+    plt.title("Qubit Bloch Sphere")
     plt.show()
+
+def qubit_time_evolution_qubitframe(alpha, beta):
+    ax = plt.figure().add_subplot(projection='3d')
+    t = np.linspace(0, 314, 100)
+    alpha_r = alpha * (np.cos(omega*t/constants.hbar) - 1j * np.sin(omega*t/constants.hbar))
+    beta_r = beta * (np.cos(omega*t/constants.hbar) + 1j * np.sin(omega*t/constants.hbar)) 
     
-qubit_time_evolution_matplot(alpha, beta)
+    z = alpha**2 - beta**2
+    y = 2 * np.imag(np.conjugate(alpha_r) * beta_r)
+    x = 2 * np.real(np.conjugate(alpha_r) * beta_r)
+
+    ax.plot(x, y, z, label='qubit')
+    ax.legend()
+
+    plt.title("Qubit Bloch Sphere")
+    plt.show()
+
+# qubit_time_evolution_matplot(alpha, beta)
 qubit_time_evolution_qutip(H, alpha, beta, t_list)
+qubit_time_evolution_qubitframe(alpha, beta)
