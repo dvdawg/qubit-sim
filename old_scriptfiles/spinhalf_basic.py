@@ -59,6 +59,7 @@ def qubit_time_evolution_qubitframe(alpha, beta):
     plt.title("Qubit Bloch Sphere")
     plt.show()
 
+
 # qubit_time_evolution_matplot(alpha, beta)
 qubit_time_evolution_qutip(H, alpha, beta, t_list)
 qubit_time_evolution_qubitframe(alpha, beta)
