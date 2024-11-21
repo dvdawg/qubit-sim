@@ -27,6 +27,7 @@ def driving(t, args):
 
 def counter_plus(t, args):
     return np.cos(2 * omega_d * t) + 1j * np.sin(2 * omega_d * t)
+
 def counter_minus(t, args):
     return np.cos(2 * omega_d * t) - 1j * np.sin(2 * omega_d * t)
 
@@ -40,45 +41,15 @@ H_counter_minus = (1/2) * np.conj(Omega) * destroy(2)
 H_qubit = [H_rwa, [H_counter_plus, counter_plus], [H_counter_minus, counter_minus]]
 
 # time variable
-t_list = np.linspace(0, 50, 5000)
+time = 100
+t_list = np.linspace(0, time, 5000)
+A = 0.010
+deviation = 0
 
-def plot_bloch():
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    ax.set_xlim(-1, 1)
-    ax.set_ylim(-1, 1)
-    ax.set_zlim(-1, 1)
- 
-    result = sesolve(H_qubit, psi_0, t_list)
-    result2 = sesolve(H_qubit, psi_0, t_list, sigmax())
-    print(max(result2.expect[0].tolist()))
-    
-        
-    alpha = [result.states[i][0] for i in range(len(result.states))]
-    beta = [result.states[i][1] for i in range(len(result.states))]
-
-    x = 2 * np.real(np.conjugate(alpha) * beta)
-    y = 2 * np.imag(np.conjugate(alpha) * beta)
-    z = alpha * np.conjugate(alpha) - beta * np.conjugate(beta)
-
-    ax.plot(x, y, z, label='qubit')
-
-    phi, theta = np.linspace(0, 2 * np.pi, 50), np.linspace(0, np.pi, 50)
-    phi, theta = np.meshgrid(phi, theta)
-    sp_x = np.sin(theta) * np.cos(phi)
-    sp_y = np.sin(theta) * np.sin(phi)
-    sp_z = np.cos(theta)
-
-    ax.plot_wireframe(sp_x, sp_y, sp_z, rstride=4, cstride=4, color='#d3d3d3', edgecolor='k', alpha=0.3)
-    ax.text(0, 0, 1.2, '|0⟩')
-    ax.text(0, 0, -1.2, '|1⟩')
-    
-    plt.title("Qubit Bloch Sphere")
-    plt.show()
-
-plot_bloch()
-
-def find_deco():
-    
+while (deviation < 0.05):
+    A += 0.001
     result = sesolve(H_qubit, psi_0, t_list, sigmax())
-    print(max(result.expect[0].tolist()))
+    vals = result.expect[0].tolist()
+    deviation = max(vals) - min(vals)
+
+print(A)
