@@ -34,6 +34,8 @@ populations_2 = simulate(2)
 populations_3 = simulate(3)
 populations_4 = simulate(4)
 populations_5 = simulate(5)
+print(populations_5)
+
 
 plt.figure(figsize=(13, 8))
 
