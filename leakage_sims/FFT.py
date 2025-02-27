@@ -1,31 +1,58 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-A = 1880
-sigma = 1  
-beta = 1  
+sigma = 1.0
+A = 1.0
 
-t = np.linspace(-5*sigma, 5*sigma, num=100) 
+def my_pulse(t):
+    return np.exp(-(t**2)/(2*sigma)) * A
+def my_pulse_DRAG(t):
+    return np.exp(-(t**2)/(2*sigma)) * 200 * (-t / (sigma**2))
 
-Omega_t = A * np.exp(-t**2 / (2 * sigma))
+def compute_power_spectrum(signal, dt):
+    N = len(signal)                          # number of samples
+    fft_result = np.fft.fft(signal)          # compute the FFT
+    fft_shifted = np.fft.fftshift(fft_result)  # shift zero frequency to center
 
-dOmega_dt = (t / sigma**2) * Omega_t  
-Omega_DRAG_t = Omega_t + 1j * A * beta * dOmega_dt
+    freq = np.fft.fftfreq(N, d=dt)           # frequency bins
+    freq_shifted = np.fft.fftshift(freq)
 
-freqs = np.fft.fftfreq(t.size, d=(t[1] - t[0])) 
-Omega_fft = np.fft.fft(Omega_t)  
-Omega_DRAG_fft = np.fft.fft(Omega_DRAG_t)
+    power_spectrum = np.abs(fft_shifted)**2  # |FFT|^2
 
-freqs_shifted = np.fft.fftshift(freqs)
-Omega_fft_shifted = np.fft.fftshift(Omega_fft)
-Omega_DRAG_fft_shifted = np.fft.fftshift(Omega_DRAG_fft)
+    return freq_shifted, power_spectrum
 
-plt.figure(figsize=(10, 5))
-plt.plot(freqs_shifted, np.abs(Omega_fft_shifted), label=r'$\Omega(t)$')
-plt.plot(freqs_shifted, np.abs(Omega_DRAG_fft_shifted), label=r'$\Omega_{DRAG}(t)$')
-plt.xlabel("Frequency (Hz)")
-plt.ylabel("Magnitude")
-plt.title("FFT of Standard and DRAG Pulses")
-plt.legend()
-plt.grid()
-plt.show()
+def main():
+    # Time parameters
+    t_min = -10
+    t_max = 10
+    dt = 0.001  # sampling interval
+    t = np.arange(t_min, t_max, dt)
+
+    # Define the pulse in time domain using the custom function
+    # You can change sigma, f0, or the definition of the function entirely.
+    pulse = my_pulse(t)
+
+    # Compute the power spectrum
+    freq, power_spec = compute_power_spectrum(pulse, dt)
+
+    # Plot the time-domain pulse
+    plt.figure(figsize=(12, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(t, pulse, 'b-')
+    plt.title("Time-Domain Pulse")
+    plt.xlabel("Time [s]")
+    plt.ylabel("Amplitude")
+
+    # Plot the power spectrum
+    plt.subplot(1, 2, 2)
+    plt.plot(freq, power_spec, 'r-')
+    plt.title("Power Spectrum")
+    plt.xlabel("Frequency [Hz]")
+    plt.ylabel("Power")
+
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    main()

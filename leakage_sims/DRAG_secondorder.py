@@ -3,7 +3,7 @@ from qutip import *
 import matplotlib.pyplot as plt
 
 omega_d = 2 * np.pi * 5.0
-omega_q = 2 * np.pi * 5.03
+omega_q = 2 * np.pi * 5.02
 alpha = -2 * np.pi * 0.2 
 Omega = 1.9 * np.pi * 0.03
 T_pi = np.pi / (2 * Omega)
@@ -18,9 +18,15 @@ def drive(t, args):
     else:
         return 0
     
-def drive_DRAG(t, args):
+def DRAG_first(t, args):
     if t <= T_pi:
-        return -1j * 200 * (-t / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2))
+        return -1j * 240 * (-t / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2))
+    else:
+        return 0
+    
+def DRAG_second(t, args):
+    if t <= T_pi:
+        return 350 * (1 / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2)) + 350 * (t**2 / (pulse_width**4)) * np.exp(-t**2 / (2 * pulse_width**2))
     else:
         return 0
 
@@ -32,7 +38,7 @@ def simulate_drag(N):
     H_anharm = (alpha / 2) * a.dag() * a.dag() * a * a 
     H_drag =  Omega * a + (1j) * a.dag() * np.conj(Omega)
 
-    H = [H_qubit, H_anharm, [H_drive, drive], [H_drag, drive_DRAG]]
+    H = [H_qubit, H_anharm, [H_drive, drive], [H_drag, DRAG_first], [H_drag, DRAG_second]]
 
     psi0 = basis(N, 0)
     result = sesolve(H, psi0, tlist, e_ops=[basis(N, i) * basis(N, i).dag() for i in range(N)])
@@ -78,7 +84,7 @@ for i, pop in enumerate(populations_3_drag):
     plt.plot(tlist, pop, label=f"|{i}\u27E9")
 plt.xlabel("t (ns)")
 plt.ylabel("Population")
-plt.title("3-Level System with DRAG")
+plt.title("3-Level System with Second-order DRAG")
 plt.legend()
 
 plt.show()
