@@ -2,12 +2,12 @@ import numpy as np
 from qutip import *
 import matplotlib.pyplot as plt
 
-omega_d = 2 * np.pi * 5.0
-omega_q = 2 * np.pi * 5.0
+omega_d = 2 * np.pi * 5.05
+omega_q = 2 * np.pi * 5.00
 alpha = -2 * np.pi * 0.2 
-Omega = 5 * np.pi * 0.03
+Omega = 2 * np.pi * 0.05
 T_pi = np.pi / (2 * Omega)
-duration = 20
+duration = 15
 tlist = np.linspace(0, duration, 1000)
 
 pulse_width = 50
@@ -20,7 +20,7 @@ def drive(t, args):
     
 def drive_DRAG(t, args):
     if t <= T_pi:
-        return -1j * 200 * (-t / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2))
+        return -1j * (210) * (-t / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2))
     else:
         return 0
 
