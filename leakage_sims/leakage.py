@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 omega_d = 2 * np.pi * 5.0
 omega_q = 2 * np.pi * 5.0
-alpha = -2 * np.pi * 0.2 
+alpha = -2 * np.pi * 0.2
 Omega = 2 * np.pi * 0.03
 T_pi = np.pi / (2 * Omega)
 duration = 13
@@ -17,7 +17,7 @@ def drive(t, args):
         return 0
 
 def simulate(N):
-    a = destroy(N) 
+    a = destroy(N)
     H_drive = Omega * a + a.dag() * np.conj(Omega)
     H_qubit = (omega_q - omega_d) * a.dag() * a  
     H_anharm = (alpha / 2) * a.dag() * a.dag() * a * a 
