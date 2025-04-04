@@ -15,6 +15,7 @@ def random_sequence(length):
 def apply_sequence(state, seq):
     for gate in seq:
         state = gate * state
+        state = gate.dag() * state
     return state
 
 def randomized_benchmarking(num_sequences, max_length, num_reps):
