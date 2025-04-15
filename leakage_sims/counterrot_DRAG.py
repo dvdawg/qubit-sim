@@ -20,13 +20,13 @@ def drive(t, args):
     
 def DRAG_first(t, args):
     if t <= T_pi:
-        return -1j * (-400) * (-t / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2))
+        return -1j * (100) * (-t / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2))
     else:
         return 0
     
 def DRAG_second(t, args):
     if t <= T_pi:
-        return (-200) * (1 / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2)) - 450 * (t**2 / (pulse_width**4)) * np.exp(-t**2 / (2 * pulse_width**2))
+        return (200) * (1 / (pulse_width**2)) * np.exp(-t**2 / (2 * pulse_width**2)) + 350 * (t**2 / (pulse_width**4)) * np.exp(-t**2 / (2 * pulse_width**2))
     else:
         return 0
 

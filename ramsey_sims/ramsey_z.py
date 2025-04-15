@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def simulate_ramsey(phi, omega_q=5.0, omega_d=4.9, total_time=74):
-    # System parameters
     A = np.pi/24  # π/2 pulse amplitude
     pulse_time = 12  # Duration of π/2 pulses
     free_time = 50   # Free evolution time

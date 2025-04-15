@@ -5,7 +5,6 @@ omega_q = 5.0
 omega_d = 4.9
 
 def simulate_ramsey_time_sweep(free_time, phi=np.pi/2, omega_q=5.0, omega_d=4.9):
-    # System parameters
     A = np.pi/24  # π/2 pulse amplitude
     pulse_time = 12  # Duration of π/2 pulses
     total_time = 2*pulse_time + free_time
