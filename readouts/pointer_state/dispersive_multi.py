@@ -2,16 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from qutip import *
 
-kappa = 5.0  # resonator linewidth  (κ/2π)
+kappa = 3.0  # resonator linewidth  (κ/2π)
 chi = 2.5          # dispersive shift     (χ/2π)  — choose χ = κ/2 for near-optimal SNR
 n_bar = 2.0          # desired steady-state photons when qubit = |g>
 
 delta_r = 0.0        # probe on bare cavity resonance  (ω_d = ω_r)
 epsilon = 0.5 * kappa * np.sqrt(n_bar)     # drive amplitude so that |α_g|^2 ≈ n_bar
 
-Ncav = 12            # Fock-space truncation for the cavity
-Nq = 4              # Number of qubit levels
-t_final = 8.0 / kappa        # integration window  (≈ 8/κ  is plenty)
+Ncav = 12 # Fock-space truncation for the cavity
+Nq = 4 # Number of qubit levels
+t_final = 8.0 / kappa # integration window  (≈ 8/κ  is plenty)
 Nt = 4000
 tlist = np.linspace(0.0, t_final, Nt)
 
