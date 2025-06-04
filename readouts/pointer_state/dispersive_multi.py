@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from qutip import *
 
-kappa = 5.0          # resonator linewidth  (κ/2π)
+kappa = 5.0  # resonator linewidth  (κ/2π)
 chi = 2.5          # dispersive shift     (χ/2π)  — choose χ = κ/2 for near-optimal SNR
 n_bar = 2.0          # desired steady-state photons when qubit = |g>
 
@@ -33,16 +33,16 @@ psi_1 = tensor(vac, basis(Nq, 1))  # |1⟩
 psi_2 = tensor(vac, basis(Nq, 2))  # |2⟩
 psi_3 = tensor(vac, basis(Nq, 3))  # |3⟩
 
-# Observables
+# observ
 e_ops = [a, (a + a.dag())/2]     # α(t) and X(t) = (a + a†)/2
 
-# Solve for each initial state
+# initial state
 res_0 = mesolve(H, psi_0, tlist, c_ops, e_ops, progress_bar=None)
 res_1 = mesolve(H, psi_1, tlist, c_ops, e_ops, progress_bar=None)
 res_2 = mesolve(H, psi_2, tlist, c_ops, e_ops, progress_bar=None)
 res_3 = mesolve(H, psi_3, tlist, c_ops, e_ops, progress_bar=None)
 
-# Extract expectation values
+# expect values
 alpha_0 = res_0.expect[0]
 alpha_1 = res_1.expect[0]
 alpha_2 = res_2.expect[0]
