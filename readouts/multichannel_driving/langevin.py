@@ -11,7 +11,7 @@ t = np.linspace(0, 10, 1000)
 
 def alpha(t, sigma_z, alpha0=0):
     decay = np.exp(-(1j * chi * sigma_z + kappa / 2) * t)
-    alpha_ss = (Omega_r + 1j * Omega_q * chi / g * sigma_z) / (kappa / 2 + 1j * chi * sigma_z)
+    alpha_ss = -(Omega_r + 1j * Omega_q * chi / g * sigma_z) / (kappa / 2 + 1j * chi * sigma_z)
     return alpha_ss + (alpha0 - alpha_ss) * decay
 
 # plot
