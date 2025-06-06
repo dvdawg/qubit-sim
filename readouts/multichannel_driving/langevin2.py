@@ -4,39 +4,74 @@ import matplotlib.pyplot as plt
 t = np.linspace(0, 10, 1000)
 # params
 kappa = 5.0
-chi_1 = 1.5
-chi_2 = 1.5
-g_1 = 1.0
+
+g_1 = 1.4
 g_2 = 1.0
-Omega_q = 0.2
-Omega_r = 0.0
-delta_r = 0.0
+
+Omega_q1 = 0.1
+Omega_q2 = 0.4
+
+Omega_r1 = 0.0
+Omega_r2 = 0.0
+
+delta_r1 = 0.8
+delta_r2 = 0.5
+
+chi_1 = g_1**2 / delta_r1
+chi_2 = g_2**2 / delta_r2
+
+ratio = chi_1 * g_2 / (chi_2 * g_1)
+Omega_q2 = Omega_q1 * ratio
 
 # drive term
 def epsilon_eff(sigma_z1, sigma_z2):
-    return Omega_r - 1j * Omega_q * (chi_1 * sigma_z1 / g_1 + chi_2 * sigma_z2 / g_2)
+    return (Omega_r1 + Omega_r2) - 1j * (Omega_q1 * chi_1 * sigma_z1 / g_1 + Omega_q2 * chi_2 * sigma_z2 / g_2)
 
 # alpha trajectory
 def alpha_traj(t, sigma_z1, sigma_z2, alpha0=0):
     chi_total = chi_1 * sigma_z1 + chi_2 * sigma_z2
-    decay = np.exp(-(1j * (delta_r + chi_total) + kappa / 2) * t)
-    alpha_ss = epsilon_eff(sigma_z1, sigma_z2) / (kappa / 2 + 1j * (delta_r + chi_total))
+    decay = np.exp(-(1j * (delta_r1 + delta_r2 + chi_total) + kappa / 2) * t)
+    alpha_ss = epsilon_eff(sigma_z1, sigma_z2) / (kappa / 2 + 1j * (delta_r1 + delta_r2 + chi_total))
     return alpha_ss + (alpha0 - alpha_ss) * decay
 
 states = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 labels = [r"$|%d%d\rangle$" % ((1-s1)//2, (1-s2)//2) for s1, s2 in states]
 
 # plot
-plt.figure(figsize=(8, 6))
+plt.figure(figsize=(10, 8))
+colors = {'00': 'blue', '01': 'red', '10': 'green', '11': 'purple'}
 for (s1, s2), label in zip(states, labels):
     alpha = alpha_traj(t, s1, s2)
-    plt.plot(alpha.real, alpha.imag, label=label)
+    state = f"{(1-s1)//2}{(1-s2)//2}"
+    plt.plot(alpha.real, alpha.imag, label=label, color=colors[state])
 
-plt.xlabel("Re(α) [I quadrature]")
-plt.ylabel("Im(α) [Q quadrature]")
-plt.title("Pointer State Trajectories in IQ Plane (Two Qubits)")
+plt.xlabel("Real")
+plt.ylabel("Imag")
+plt.title("Pointer State Trajectories")
 plt.grid(True)
 plt.legend()
 plt.axis("equal")
+plt.tight_layout()
+plt.show()
+
+omega_probe = np.linspace(-30, 30, 300) 
+epsilon = 0.5 * kappa * np.sqrt(2.0)    
+alpha_phases = {}
+
+states = {'00': (-1, -1), '01': (-1, +1), '10': (+1, -1), '11': (+1, +1)}
+
+for label, (sz1_val, sz2_val) in states.items():
+    delta_eff = omega_probe - (chi_1 * sz1_val + chi_2 * sz2_val)
+    alpha = epsilon / (kappa/2 + 1j * delta_eff)
+    alpha_phases[label] = np.angle(alpha)
+
+plt.figure(figsize=(8, 6))
+for label, phase in alpha_phases.items():
+    plt.plot(omega_probe, phase, label=f"|{label}⟩")
+plt.title("Phase Response")
+plt.xlabel("omega - omega_0 (MHz)")
+plt.ylabel("Arg (rad)")
+plt.legend()
+plt.grid(True)
 plt.tight_layout()
 plt.show()
