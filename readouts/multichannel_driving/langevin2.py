@@ -1,10 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Time axis
 t = np.linspace(0, 10, 1000)
 
-# Parameters
+# params
 kappa = 5.0
 
 g_1 = 0.2
@@ -16,8 +15,8 @@ delta_r2 = 1.2
 chi_1 = g_1**2 / delta_r1
 chi_2 = g_2**2 / delta_r2
 
-phi_q1 = np.pi / 6
-phi_q2 = np.pi / 3
+phi_q1 = 0
+phi_q2 = 0 * np.pi / 3
 
 Omega_q1_mag = 0.1
 Omega_q1 = Omega_q1_mag * np.exp(1j * phi_q1)
@@ -30,25 +29,19 @@ Omega_r1 = 0.0
 Omega_r2 = 0.0
 
 
-
-# Effective cavity drive (includes compensation from qubit drives)
 def epsilon_eff(sigma_z1, sigma_z2):
-    return (Omega_r1 + Omega_r2) - 1j * (
-        Omega_q1 * chi_1 * sigma_z1 / g_1 + Omega_q2 * chi_2 * sigma_z2 / g_2
-    )
+    return 1j * (Omega_r1 + Omega_r2) - (
+        Omega_q1 * chi_1 * sigma_z1 / g_1 + Omega_q2 * chi_2 * sigma_z2 / g_2)
 
-# Alpha trajectory
 def alpha_traj(t, sigma_z1, sigma_z2, alpha0=0):
     chi_total = chi_1 * sigma_z1 + chi_2 * sigma_z2
     decay = np.exp(-(1j * (delta_r1 + delta_r2 + chi_total) + kappa / 2) * t)
     alpha_ss = epsilon_eff(sigma_z1, sigma_z2) / (-1j * kappa / 2 + (delta_r1 + delta_r2 + chi_total))
     return alpha_ss + (alpha0 - alpha_ss) * decay
 
-# Computational basis states
 states = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 labels = [r"$|%d%d\rangle$" % ((1 - s1) // 2, (1 - s2) // 2) for s1, s2 in states]
 
-# Plot pointer state trajectories
 plt.figure(figsize=(10, 8))
 colors = {'00': 'blue', '01': 'red', '10': 'green', '11': 'purple'}
 for (s1, s2), label in zip(states, labels):
@@ -67,7 +60,6 @@ plt.axis("equal")
 plt.tight_layout()
 plt.show()
 
-# Phase response plot
 omega_probe = np.linspace(-30, 30, 300)
 epsilon = 0.5 * kappa * np.sqrt(2.0)
 alpha_phases = {}
@@ -80,6 +72,7 @@ for label, (sz1_val, sz2_val) in states.items():
     alpha_phases[label] = np.angle(alpha)
 
 plt.figure(figsize=(8, 6))
+
 for label, phase in alpha_phases.items():
     plt.plot(omega_probe, phase, label=f"|{label}⟩")
 plt.title("Phase Response")
