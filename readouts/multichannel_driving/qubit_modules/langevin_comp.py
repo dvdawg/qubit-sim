@@ -13,7 +13,7 @@ delta_resonator = -0.1
 delta_r1 = 0.8
 delta_r2 = 0.8
 
-# drive params 
+# drive params (for manual plotting)
 Omega_q1_mag = 3.0
 phi_q1 = np.pi
 Omega_q2_mag = 2.0
@@ -25,7 +25,7 @@ initial_params = [0.1, 0, 0.1, np.pi/2]
 bounds = [
     (0.001, 2.0),    # Omega_q1_mag
     (0, 2*np.pi),   # phi_q1
-    (0.001, 2.0),    # Omega_q2_mag
+    (0.001, 2.0),    # Omega_q2_mag 
     (0, 2*np.pi)    # phi_q2
 ]
 
@@ -65,7 +65,7 @@ def calculate_spacing_metric(params):
     
     distances = []
     for i in range(len(steady_states)):
-        for j in range(i+1, len(steady_states)):
+        for j in range(i + 1, len(steady_states)):
             dist = np.abs(steady_states[i] - steady_states[j])
             distances.append(dist)
     distances = np.array(distances)
@@ -82,7 +82,7 @@ def calculate_spacing_metric(params):
     
     return -(min_dist * (1 - uniformity))
 
-def objective_function(params):
+def objective_function(params): 
     if optimize_type == 'spacing':
         return calculate_spacing_metric(params)
     else:
