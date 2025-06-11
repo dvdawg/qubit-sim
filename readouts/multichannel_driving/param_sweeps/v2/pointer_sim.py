@@ -1,58 +1,60 @@
-# pointer_sim.py
-
 import numpy as np
 from scipy.optimize import minimize
+from scipy import integrate
 
-# ─── Measurement parameters ───────────────────────────────────────────────────
-eta = 0.5          # total measurement efficiency (0 < η ≤ 1)
-tau = 200       # integration time window (200 ns)
+eta = 0.5 # total measurement efficiency (0 < η ≤ 1)
+tau = 200 # ns
 
-# ─── Dispersive shifts ────────────────────────────────────────────────────────
+# dispersive shift calculation
 def compute_chis(g_1, g_2, delta_r1, delta_r2):
-    """Compute χ₁ = g₁²/Δ₁ and χ₂ = g₂²/Δ₂."""
     chi_1 = g_1**2 / delta_r1
     chi_2 = g_2**2 / delta_r2
     return chi_1, chi_2
 
-# ─── Steady-state pointer amplitude ───────────────────────────────────────────
-def calculate_steady_state(sigma_z1, sigma_z2, params,
-                           chi_1, chi_2,
-                           delta_r1, delta_r2,
-                           kappa, g_1, g_2, delta_resonator):
-    """
-    Return α_ss for the resonator given qubit σ_z’s and drive params.
-    """
+# steady-state pointer amplitude calculation
+def calculate_steady_state(sigma_z1, sigma_z2, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator):
     Omega_q1_mag, phi_q1, Omega_q2_mag, phi_q2 = params
     Omega_q1 = Omega_q1_mag * np.exp(1j * phi_q1)
     Omega_q2 = Omega_q2_mag * np.exp(1j * phi_q2)
     Omega_r = 0.0
 
-    epsilon = (1j * Omega_r
-               - (Omega_q1 * chi_1 * sigma_z1 / g_1
-                  + Omega_q2 * chi_2 * sigma_z2 / g_2))
+    epsilon = (1j * Omega_r - (Omega_q1 * chi_1 * sigma_z1 / g_1 + Omega_q2 * chi_2 * sigma_z2 / g_2))
     delta_eff = chi_1 * sigma_z1 + chi_2 * sigma_z2
 
     return epsilon / (1j * kappa/2 + delta_eff + delta_resonator)
 
-# ─── Instantaneous (steady-state) SNR ─────────────────────────────────────────
-def calculate_snr(state1, state2, params,
-                  chi_1, chi_2,
-                  delta_r1, delta_r2,
-                  kappa, g_1, g_2, delta_resonator,
-                  n_avg=1):
-    """
-    |α₁–α₂| / noise, where noise = √(n₁ + n₂)/√n_avg.
-    """
-    α1 = calculate_steady_state(*state1, params,
-                                chi_1, chi_2,
-                                delta_r1, delta_r2,
-                                kappa, g_1, g_2, delta_resonator)
-    α2 = calculate_steady_state(*state2, params,
-                                chi_1, chi_2,
-                                delta_r1, delta_r2,
-                                kappa, g_1, g_2, delta_resonator)
+def alpha_traj(t, sigma_z1, sigma_z2, params, chi_1, chi_2, kappa, g_1, g_2, delta_resonator):
+    Omega_q1_mag, phi_q1, Omega_q2_mag, phi_q2 = params
+    Omega_q1 = Omega_q1_mag * np.exp(1j * phi_q1)
+    Omega_q2 = Omega_q2_mag * np.exp(1j * phi_q2)
+    Omega_r = 0.0
+    
+    epsilon = 1j * Omega_r - (Omega_q1 * chi_1 * sigma_z1 / g_1 + Omega_q2 * chi_2 * sigma_z2 / g_2)
+    delta_eff = delta_resonator + chi_1 * sigma_z1 + chi_2 * sigma_z2
+    decay = np.exp(-(1j * delta_eff + kappa / 2) * t)
+    alpha_ss = epsilon / (1j * kappa / 2 + delta_eff)
+    return alpha_ss + (0 - alpha_ss) * decay
 
-    return np.abs(α1 - α2) * np.sqrt(2 * kappa * tau)
+# steady state snr
+def calculate_snr(state1, state2, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator, tau):
+    alpha_1 = calculate_steady_state(*state1, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator)
+    alpha_2 = calculate_steady_state(*state2, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator)
+
+    return np.abs(alpha_1 - alpha_2) * np.sqrt(2 * kappa * tau)
+
+# time-integrated snr
+def integrated_snr(state1, state2, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator, tau, eta):
+    t = np.linspace(0, tau , 1000)  # GHz time
+
+    alpha_1 = alpha_traj(t, *state1, params, chi_1, chi_2, kappa, g_1, g_2, delta_resonator)
+    alpha_2 = alpha_traj(t, *state2, params, chi_1, chi_2, kappa, g_1, g_2, delta_resonator)
+    
+    W_t = alpha_1 - alpha_2
+
+    numerator = np.abs(np.trapz(W_t * np.conj(W_t), t))**2
+    denominator = 0.5 * np.trapz(np.abs(W_t)**2, t)
+
+    return eta * kappa * numerator / denominator
 
 # # ─── Time-integrated SNR over τ ────────────────────────────────────────────────
 # def integrated_snr(state1, state2, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator):
@@ -66,18 +68,16 @@ def calculate_snr(state1, state2, params,
 #     ringup = (1 - np.exp(-kappa * tau / 2))**2
 #     return 4 * eta * kappa * tau * ss_snr * ringup
 
-# ─── Objective: maximize worst-case integrated SNR ───────────────────────────
-def objective_function(params, state_pairs, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator):
+def objective_function(params, state_pairs, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator, tau):
     snrs = [
-        calculate_snr(s1, s2, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator)
+        calculate_snr(s1, s2, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator, tau)
         for s1, s2 in state_pairs
     ]
     return -min(snrs)
 
-# ─── Wrapper: find optimal drive params for given device params ──────────────
 def optimize_parameters(delta_r1, delta_r2,
                         g_1, g_2,
-                        kappa, delta_resonator):
+                        kappa, delta_resonator, tau):
     chi_1, chi_2 = compute_chis(g_1, g_2, delta_r1, delta_r2)
 
     # Pairs of logical states whose pointer separation we care about
@@ -101,7 +101,7 @@ def optimize_parameters(delta_r1, delta_r2,
         args=(state_pairs,
               chi_1, chi_2,
               delta_r1, delta_r2,
-              kappa, g_1, g_2, delta_resonator),
+              kappa, g_1, g_2, delta_resonator, tau),
         bounds=bounds
     )
 
@@ -110,7 +110,7 @@ def optimize_parameters(delta_r1, delta_r2,
         calculate_snr(s1, s2, opt,
                        chi_1, chi_2,
                        delta_r1, delta_r2,
-                       kappa, g_1, g_2, delta_resonator)
+                       kappa, g_1, g_2, delta_resonator, tau)
         for s1, s2 in state_pairs
     ]
 
