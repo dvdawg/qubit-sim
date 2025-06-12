@@ -2,9 +2,6 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy import integrate
 
-eta = 0.5 # total measurement efficiency (0 < η ≤ 1)
-tau = 200 # ns
-
 # dispersive shift calculation
 def compute_chis(g_1, g_2, delta_r1, delta_r2):
     chi_1 = g_1**2 / delta_r1
@@ -44,14 +41,14 @@ def calculate_snr(state1, state2, params, chi_1, chi_2, delta_r1, delta_r2, kapp
 
 # time-integrated snr
 def integrated_snr(state1, state2, params, chi_1, chi_2, delta_r1, delta_r2, kappa, g_1, g_2, delta_resonator, tau, eta):
-    t = np.linspace(0, tau , 1000)  # GHz time
+    t = np.linspace(0, tau, 1000)  # GHz time
 
     alpha_1 = alpha_traj(t, *state1, params, chi_1, chi_2, kappa, g_1, g_2, delta_resonator)
     alpha_2 = alpha_traj(t, *state2, params, chi_1, chi_2, kappa, g_1, g_2, delta_resonator)
     
-    W_t = alpha_1 - alpha_2
+    W_t = alpha_1 - alpha_2 # np.ones_like(t)
 
-    numerator = np.abs(np.trapz(W_t * np.conj(W_t), t))**2
+    numerator = np.abs(np.trapz(W_t * (alpha_2 - alpha_1), t))**2
     denominator = 0.5 * np.trapz(np.abs(W_t)**2, t)
 
     return eta * kappa * numerator / denominator
@@ -83,7 +80,6 @@ def get_state_pairs(optimization_case, energy_levels):
         for i, s1 in enumerate(states):
             for j, s2 in enumerate(states[i+1:], i+1):
                 pairs.append((s1, s2))
-        print(pairs)
         return pairs
     
     elif optimization_case == 'binary_states':

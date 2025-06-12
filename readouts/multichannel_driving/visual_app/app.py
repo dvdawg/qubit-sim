@@ -20,7 +20,7 @@ from pointer_sim import (
 st.set_page_config(layout="wide", page_title="Qubit Pointer State Visualization")
 
 tau = 200
-eta = 0.5
+eta = 0.4
 energy_levels = 3
 t = np.linspace(0, 1000, 1000)
 
@@ -30,7 +30,7 @@ st.sidebar.title("Simulation Parameters")
 energy_levels = st.sidebar.number_input("Energy Levels", value=3, min_value=2, max_value=4, step=1)
 manual = not st.sidebar.toggle("Optimize Parameters", value=True)
 optimize_type = st.sidebar.selectbox("Optimization Metric", ['min', 'avg', 'spacing'])
-optimization_case = st.sidebar.selectbox("Optimization Case", ['all_states', 'binary_states', 'adjacent_states'])
+optimization_case = st.sidebar.selectbox("Optimization Case", ['all', 'only two level', '10/01'])
 
 st.sidebar.markdown("### System Parameters")
 kappa = st.sidebar.number_input("κ", value=0.01, help="Decay rate")
@@ -80,6 +80,8 @@ def objective_function(params):
 
 # --- Run Optimization or Manual ---
 if not manual:
+    optimization_case = 'all_states' if optimization_case == 'all' else 'binary_states' if optimization_case == 'only two level' else 'adjacent_states' if optimization_case == '10/01' else ''
+
     state_pairs = get_state_pairs(optimization_case, energy_levels)
     states = generate_states(energy_levels)
     

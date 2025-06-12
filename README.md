@@ -1,1 +1,1 @@
-qubit sim made for prep w/qnl.
+assortment of simulations written for qnl
